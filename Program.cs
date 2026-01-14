@@ -1,21 +1,24 @@
-﻿using System.ComponentModel;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
+using System.Text;
 
 class Program
 {
     static void Main()
     {
-
         // データベース準備
         InitializeDatabase();
 
-        Console.WriteLine("=== 家計簿アプリ ===");
-        Console.WriteLine("1. 支出を追加する");
-        Console.WriteLine("2. 支出一覧を見る");
-        Console.WriteLine("3. 支出を編集する");
-        Console.WriteLine("4. 支出を削除する");
-        Console.WriteLine("5. 終了");
-        Console.Write("番号を選んでください: ");
+        var menu = new StringBuilder();
+
+        menu.AppendLine("=== 家計簿アプリ ===");
+        menu.AppendLine("1. 支出を追加する");
+        menu.AppendLine("2. 支出一覧を見る");
+        menu.AppendLine("3. 支出を編集する");
+        menu.AppendLine("4. 支出を削除する");
+        menu.AppendLine("5. 終了");
+        menu.Append("番号を選んでください: ");
+
+        Console.Write(menu.ToString());
 
         var input = Console.ReadLine();
 
@@ -51,23 +54,27 @@ class Program
         Console.WriteLine();
     }
 
+    /// <summary>
+    /// データベースを用意する
+    /// expenses.dbに接続し、expensesテーブルを作成する。
+    /// </summary>
     static void InitializeDatabase()
     {
         Console.WriteLine("DB初期化処理");
 
-        // 接続先情報
+        // 接続先
         var connectionString = "Data Source = expenses.db";
 
-        // インスタンスの生成
+        // DBへ接続
         using (var connection = new SqliteConnection(connectionString))
         {
             // 接続開始
             connection.Open();
 
             // SQL実行のためのコマンドを作成
-            using var command = connectionString.CreateCommand();
+            using var command = connection.CreateCommand();
 
-            // expensesテーブルの作成
+            // テーブルの作成
             command.CommandText = @"CREATE TABLE IF NOT EXISTS expenses(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date INTEGER NOT NULL,
@@ -76,14 +83,63 @@ class Program
                 memo TEXT
                 );
             ";
+
+            // CREATE文を実行
             command.ExecuteNonQuery();
 
             Console.WriteLine("データベースの準備完了");
         }
     }
+    /// <summary>
+    /// 支出を1件データベースに追加する処理。
+    /// ユーザーから日付・金額・カテゴリ・メモの入力を受け取る
+    /// expensesテーブルへ追加(INSERT)する。
+    /// </summary>
     static void AddExpense()
     {
         Console.WriteLine("支出追加処理");
+
+        // 入力を受け取る
+        Console.WriteLine("日付を入力してください");
+        var date = Console.ReadLine();
+
+        Console.WriteLine("金額を入力してください");
+        var price = Console.ReadLine();
+
+        Console.WriteLine("カテゴリを入力してください");
+        var category = Console.ReadLine();
+
+        Console.WriteLine("メモを入力してください");
+        var memo = Console.ReadLine();
+
+        // DBへ接続
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // INSERT文で値を入れる
+            command.CommandText = @"
+                INSERT INTO expenses(date, price, category, memo)
+                VALUES(@date, @price, @category, @memo);
+            ";
+
+            // SQL文内の@dateにdateを渡す
+            command.Parameters.AddWithValue("@date", date);
+            // SQL文内の@priceにpriceを渡す
+            command.Parameters.AddWithValue("@price", price);
+            // SQL文内の@categoryにcategoryを渡す
+            command.Parameters.AddWithValue("@category", category);
+            // SQL文内の@memoにmemoを渡す
+            command.Parameters.AddWithValue("@memo", memo);
+
+            // INSERT文の実行
+            command.ExecuteNonQuery();
+        }
+        Console.WriteLine("支出を追加しました");
     }
 
     static void EditExpense()
