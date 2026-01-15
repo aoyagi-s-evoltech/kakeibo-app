@@ -142,9 +142,104 @@ class Program
         Console.WriteLine("支出を追加しました");
     }
 
+    /// <summary>
+    /// 支出データを編集
+    /// ユーザーに編集したいidを入力してもらい、
+    /// 対象データが存在する場合現在の内容を表示し、
+    /// ユーザーより新しい値を入力してもらった後更新。
+    /// </summary>
     static void EditExpense()
     {
         Console.WriteLine("支出編集処理");
+
+        // DBへ接続
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // 編集したいidを入力
+            Console.WriteLine("編集したいidを入力してください");
+            var idText = Console.ReadLine();
+            var id = int.Parse(idText);
+
+            // idのデータを取得
+            command.CommandText = @"
+                SELECT id, date, price, category, memo
+                FROM expenses
+                WHERE id = @id;
+            ";
+
+            // SQL文内の@idにidを渡す
+            command.Parameters.AddWithValue("@id", id);
+
+            // SELECT文を実行
+            using var reader = command.ExecuteReader();
+
+            // データが1件でも登録されているか判定
+            bool hasData = false;
+
+            // 1件でもある場合
+            while (reader.Read())
+            {
+                hasData = true;
+
+                // 現在の内容を表示
+                Console.WriteLine($"日付:{reader["date"]}  金額:{reader["price"]}  カテゴリ:{reader["category"]}  メモ:{reader["memo"]}");
+
+                // 新しい値を入力
+                Console.WriteLine("日付を入力してください");
+                var date = Console.ReadLine();
+
+                Console.WriteLine("金額を入力してください");
+                var price = Console.ReadLine();
+
+                Console.WriteLine("カテゴリを入力してください");
+                var category = Console.ReadLine();
+
+                Console.WriteLine("メモを入力してください");
+                var memo = Console.ReadLine();
+
+                // URDATEを実行するため、readerを閉じる
+                reader.Close();
+
+                // UPDATE文で上書き
+                command.CommandText = @"
+                    UPDATE expenses 
+                    SET date = @date, price = @price, category = @category, memo = @memo
+                    WHERE id = @id;
+                ";
+
+                // 前のSELECTで使ったパラメータを一度全部消す
+                command.Parameters.Clear();
+
+                // SQL文内の@idにidを渡す
+                command.Parameters.AddWithValue("@id", id);
+                // SQL文内の@dateにdateを渡す
+                command.Parameters.AddWithValue("@date", date);
+                // SQL文内の@priceにpriceを渡す
+                command.Parameters.AddWithValue("@price", price);
+                // SQL文内の@categoryにcategoryを渡す
+                command.Parameters.AddWithValue("@category", category);
+                // SQL文内の@memoにmemoを渡す
+                command.Parameters.AddWithValue("@memo", memo);
+                
+                // UPDATE文の実行
+                command.ExecuteNonQuery();
+
+                Console.WriteLine("更新しました");
+                break;
+            }
+
+            // データがない場合
+            if(!hasData)
+            {
+                Console.WriteLine("入力されたidがありません");
+            }
+        }
     }
 
     static void DeleteExpense()
@@ -152,8 +247,50 @@ class Program
         Console.WriteLine("支出削除処理");
     }
 
+    /// <summary>
+    /// 支出として登録されているデータを一覧で表示する
+    /// id / 日付 / 金額 / カテゴリ / メモ を1行ずつ読み取り、整形して出力する。
+    /// データが1件もない場合、「データがありません」と表示
+    /// </summary>
     static void ShowExpenses()
     {
-        Console.WriteLine("一覧表示");
+        Console.WriteLine("支出一覧");
+        
+        // DBへ接続
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // expensesから全件SELECT
+            command.CommandText = @"
+                SELECT id, date, price, category, memo
+                FROM expenses
+            ";
+
+            // SQLを実行し、結果を読み取る
+            using var reader = command.ExecuteReader();
+            // データが1件でも登録されているか判定
+            bool hasData = false;
+
+            // 1行ずつ読み取って表示
+            while (reader.Read())
+            {
+                // データが1件でもあればtrue
+                hasData = true;
+
+                // id/date/price/category/memoを見やすくし、表示
+                Console.WriteLine($"日付:{reader["date"]}  金額:{reader["price"]}  カテゴリ:{reader["category"]}  メモ:{reader["memo"]}");
+            }
+
+            // データがない場合
+            if(!hasData)
+            {
+                Console.WriteLine("データがありません");
+            }
+        }
     }
 }
