@@ -25,33 +25,9 @@ class ExpenseManager
         Console.WriteLine("メモを入力してください");
         var memo = Console.ReadLine();
 
-        // DBへ接続
-        using (var connection = new SqliteConnection("Data Source = expenses.db"))
-        {
-            // 接続開始
-            connection.Open();
+        var repository = new ExpenseRepository();
+        repository.Insert(date, price, category, memo);
 
-            // SQL実行のためのコマンドを作成
-            using var command = connection.CreateCommand();
-
-            // INSERT文で値を入れる
-            command.CommandText = @"
-                INSERT INTO expenses(date, price, category, memo)
-                VALUES(@date, @price, @category, @memo);
-            ";
-
-            // SQL文内の@dateにdateを渡す
-            command.Parameters.AddWithValue("@date", date);
-            // SQL文内の@priceにpriceを渡す
-            command.Parameters.AddWithValue("@price", price);
-            // SQL文内の@categoryにcategoryを渡す
-            command.Parameters.AddWithValue("@category", category);
-            // SQL文内の@memoにmemoを渡す
-            command.Parameters.AddWithValue("@memo", memo);
-
-            // INSERT文の実行
-            command.ExecuteNonQuery();
-        }
         Console.WriteLine("支出を追加しました");
     }
 
