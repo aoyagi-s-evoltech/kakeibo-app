@@ -56,8 +56,10 @@ class Program
 
     /// <summary>
     /// データベースを用意する
-    /// expenses.dbに接続し、expensesテーブルを作成する。
     /// </summary>
+    /// <remarks>
+    /// expenses.dbに接続し、expensesテーブルを作成する。
+    /// </remarks>
     static void InitializeDatabase()
     {
         Console.WriteLine("DB初期化処理");
@@ -92,9 +94,12 @@ class Program
     }
     /// <summary>
     /// 支出を1件データベースに追加する処理。
+    /// </summary>
+    /// <remarks>
     /// ユーザーから日付・金額・カテゴリ・メモの入力を受け取る
     /// expensesテーブルへ追加(INSERT)する。
-    /// </summary>
+    /// </remarks>
+    
     static void AddExpense()
     {
         Console.WriteLine("支出追加処理");
@@ -144,10 +149,12 @@ class Program
 
     /// <summary>
     /// 支出データを編集
+    /// </summary>
+    /// <remarks>
     /// ユーザーに編集したいidを入力してもらい、
     /// 対象データが存在する場合現在の内容を表示し、
     /// ユーザーより新しい値を入力してもらった後更新。
-    /// </summary>
+    /// </remarks>
     static void EditExpense()
     {
         Console.WriteLine("支出編集処理");
@@ -242,17 +249,87 @@ class Program
         }
     }
 
+    /// <summary>
+    /// 支出データを削除する
+    /// </summary>
+    /// <remarks>
+    /// 一覧を表示し、ユーザーに削除したいidを入力してもらう
+    /// 対象データが存在する場合、該当データを削除する
+    /// </remarks>
     static void DeleteExpense()
     {
         Console.WriteLine("支出削除処理");
+
+        // 一覧表示
+        bool hasData = ShowExpenses();
+
+        // データがない場合はメッセージを出力し、終了
+        if(!hasData)
+        {
+            Console.WriteLine("削除可能なデータがありません");
+            Console.WriteLine("Enterキーで戻ります");
+            Console.ReadLine();
+            return;
+        }
+
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // 削除したいidを入力
+            Console.WriteLine("削除したいidを入力してください");
+            var idText = Console.ReadLine();
+            var id = int.Parse(idText);
+            
+            // idのデータを取得しデータが存在するのか確認
+            command.CommandText = @"
+                SELECT id, date, price, category, memo
+                FROM expenses
+                WHERE id = @id;
+            ";
+            
+            // SQL文内の@idにidを渡す
+            command.Parameters.AddWithValue("@id", id);
+
+            var reader = command.ExecuteReader(); 
+
+            // idが取得できればtrue
+            bool exists = reader.Read();
+            reader.Close();
+
+            // idが取得できなければ、メッセージを出力し終了
+            if(!exists)
+            {
+                Console.WriteLine("入力されたidがありません");
+                Console.WriteLine("Enterキーで戻ります");
+                Console.ReadLine();
+                return;
+            }
+
+            // 取得できた場合はDELETE文を実行
+            command.CommandText = @"
+                DELETE FROM expenses
+                WHERE id = @id;
+            ";
+            command.ExecuteNonQuery();
+
+            Console.WriteLine("削除しました");
+            Console.WriteLine("Enterキーで戻ります");
+            Console.ReadLine();
+        }
     }
 
     /// <summary>
     /// 支出として登録されているデータを一覧で表示する
+    /// </summary>
+    /// <remarks>
     /// id / 日付 / 金額 / カテゴリ / メモ を1行ずつ読み取り、整形して出力する。
     /// データが1件もない場合、「データがありません」と表示
-    /// </summary>
-    static void ShowExpenses()
+    /// </remarks>
+    static bool ShowExpenses()
     {
         Console.WriteLine("支出一覧");
         
@@ -273,6 +350,7 @@ class Program
 
             // SQLを実行し、結果を読み取る
             using var reader = command.ExecuteReader();
+
             // データが1件でも登録されているか判定
             bool hasData = false;
 
@@ -281,7 +359,6 @@ class Program
             {
                 // データが1件でもあればtrue
                 hasData = true;
-
                 // id/date/price/category/memoを見やすくし、表示
                 Console.WriteLine($"日付:{reader["date"]}  金額:{reader["price"]}  カテゴリ:{reader["category"]}  メモ:{reader["memo"]}");
             }
@@ -291,6 +368,7 @@ class Program
             {
                 Console.WriteLine("データがありません");
             }
+            return hasData;
         }
     }
 }
