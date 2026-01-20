@@ -118,7 +118,6 @@ class ExpenseManager
     /// 一覧を表示し、ユーザーに削除したいidを入力してもらう
     /// 対象データが存在する場合、該当データを削除する
     /// </remarks>
-
     public void DeleteExpense()
     {
         Console.WriteLine("支出削除処理");
@@ -135,53 +134,30 @@ class ExpenseManager
             return;
         }
 
-        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        // 削除したいidを入力
+        Console.WriteLine("削除したいidを入力してください");
+        var idText = Console.ReadLine();
+        var id = int.Parse(idText);
+
+        var repository = new ExpenseRepository();
+
+        // idが存在するか確認
+        var expense = repository.GetById(id);
+
+        // idが取得できなければ、メッセージを出力し終了
+        if(expense == null)
         {
-            // 接続開始
-            connection.Open();
-            // SQL実行のためのコマンドを作成
-            using var command = connection.CreateCommand();
-
-            // 削除したいidを入力
-            Console.WriteLine("削除したいidを入力してください");
-            var idText = Console.ReadLine();
-            var id = int.Parse(idText);
-            
-            // idのデータを取得しデータが存在するのか確認
-            command.CommandText = @"
-                SELECT id, date, price, category, memo
-                FROM expenses
-                WHERE id = @id;
-            ";
-            
-            // SQL文内の@idにidを渡す
-            command.Parameters.AddWithValue("@id", id);
-
-            var reader = command.ExecuteReader(); 
-
-            // idが取得できればtrue
-            bool exists = reader.Read();
-            reader.Close();
-
-            // idが取得できなければ、メッセージを出力し終了
-            if(!exists)
-            {
-                Console.WriteLine("入力されたidがありません");
-                Console.WriteLine("Enterキーで戻ります");
-                Console.ReadLine();
-                return;
-            }
-
-            // 取得できた場合はDELETE文を実行
-            command.CommandText = @"
-                DELETE FROM expenses
-                WHERE id = @id;
-            ";
-            command.ExecuteNonQuery();
-
-            Console.WriteLine("削除しました");
+            Console.WriteLine("入力されたidがありません");
             Console.WriteLine("Enterキーで戻ります");
             Console.ReadLine();
+            return;
         }
+
+        // 取得できた場合は削除を実行
+        repository.Delete(id);
+
+        Console.WriteLine("削除しました");
+        Console.WriteLine("Enterキーで戻ります");
+        Console.ReadLine();
     }
 }

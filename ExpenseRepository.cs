@@ -118,4 +118,26 @@ class ExpenseRepository
         }
         return null;
     }
+
+    public void Delete(int id)
+    {
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // idのデータを取得しデータが存在するのか確認
+            command.CommandText = @"
+                DERETE FROM expenses
+                WHERE id = @id;
+            ";
+            
+            // SQL文内の@idにidを渡す
+            command.Parameters.AddWithValue("@id", id);
+
+            command.ExecuteNonQuery();
+        }
+    }
 }
