@@ -35,50 +35,30 @@ class ExpenseManager
     /// 支出として登録されているデータを一覧で表示する
     /// </summary>
     /// <remarks>
-    /// id / 日付 / 金額 / カテゴリ / メモ を1行ずつ読み取り、整形して出力する。
+    /// Repositoryから取得した支出データ（id/日付/金額/カテゴリ/メモ）を出力する
     /// データが1件もない場合、「データがありません」と表示
     /// </remarks>
     public bool ShowExpenses()
     {
         Console.WriteLine("支出一覧");
         
-        // DBへ接続
-        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        // Repositoryから全件取得
+        var repository = new ExpenseRepository();
+        var list = repository.GetAll();
+
+        // データがない場合
+        if(list.Count == 0)
         {
-            // 接続開始
-            connection.Open();
-
-            // SQL実行のためのコマンドを作成
-            using var command = connection.CreateCommand();
-
-            // expensesから全件SELECT
-            command.CommandText = @"
-                SELECT id, date, price, category, memo
-                FROM expenses
-            ";
-
-            // SQLを実行し、結果を読み取る
-            using var reader = command.ExecuteReader();
-
-            // データが1件でも登録されているか判定
-            bool hasData = false;
-
-            // 1行ずつ読み取って表示
-            while (reader.Read())
-            {
-                // データが1件でもあればtrue
-                hasData = true;
-                // id/date/price/category/memoを見やすくし、表示
-                Console.WriteLine($"日付:{reader["date"]}  金額:{reader["price"]}  カテゴリ:{reader["category"]}  メモ:{reader["memo"]}");
-            }
-
-            // データがない場合
-            if(!hasData)
-            {
-                Console.WriteLine("データがありません");
-            }
-            return hasData;
+            Console.WriteLine("データがありません");
+            return false;
         }
+
+        // データがある場合
+        foreach(var expense in list)
+        {
+            Console.WriteLine($"ID:{expense.Id}  日付:{expense.Date}  金額:{expense.Price}  カテゴリ:{expense.Category}  メモ:{expense.Memo}");
+        }
+            return true;
     }
 
     /// <summary>
