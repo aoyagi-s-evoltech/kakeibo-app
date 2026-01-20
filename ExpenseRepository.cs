@@ -68,10 +68,54 @@ class ExpenseRepository
                     Category = reader["category"].ToString(),
                     Memo = reader["memo"].ToString()
                 };
-                
+
                 list.Add(expense);
             }
         }
         return list;
+    }
+
+        public List<Expense> GetById(int id)
+    {
+        var list = new List<Expense>();
+
+        // DBへ接続
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // 全件取得するSELECT文
+            command.CommandText = @"
+                SELECT id, date, price, category, memo
+                FROM expenses
+                WHERE id = @id;
+            ";
+
+            // SQL文内の@idにidを渡す
+            command.Parameters.AddWithValue("@id", id);
+
+            // SELECT文を実行
+            using var reader = command.ExecuteReader();
+
+            while(reader.Read())
+            {
+                var expense = new Expense
+                {
+                    // DBの値をC#の型に変換
+                    Id = Convert.ToInt32(reader["id"]),
+                    Date = reader["date"].ToString(),
+                    Price = Convert.ToInt32(reader["price"]),
+                    Category = reader["category"].ToString(),
+                    Memo = reader["memo"].ToString()
+                };
+
+                list.Add(expense);
+            }
+        }
+        return null;
     }
 }
