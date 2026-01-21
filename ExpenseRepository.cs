@@ -75,10 +75,8 @@ class ExpenseRepository
         return list;
     }
 
-        public List<Expense> GetById(int id)
+    public Expense GetById(int id)
     {
-        var list = new List<Expense>();
-
         // DBへ接続
         using (var connection = new SqliteConnection("Data Source = expenses.db"))
         {
@@ -88,7 +86,7 @@ class ExpenseRepository
             // SQL実行のためのコマンドを作成
             using var command = connection.CreateCommand();
 
-            // 全件取得するSELECT文
+            // 1件取得するSELECT文
             command.CommandText = @"
                 SELECT id, date, price, category, memo
                 FROM expenses
@@ -101,9 +99,9 @@ class ExpenseRepository
             // SELECT文を実行
             using var reader = command.ExecuteReader();
 
-            while(reader.Read())
+            if(reader.Read())
             {
-                var expense = new Expense
+                return new Expense
                 {
                     // DBの値をC#の型に変換
                     Id = Convert.ToInt32(reader["id"]),
@@ -112,8 +110,6 @@ class ExpenseRepository
                     Category = reader["category"].ToString(),
                     Memo = reader["memo"].ToString()
                 };
-
-                list.Add(expense);
             }
         }
         return null;
