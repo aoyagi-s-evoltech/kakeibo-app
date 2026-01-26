@@ -58,8 +58,6 @@ class Program
                     Console.WriteLine("正しい番号を入力してください。");
                     break;
             }
-        
-        Console.WriteLine();
         }
     }
 }
