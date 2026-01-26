@@ -2,7 +2,23 @@ using Microsoft.Data.Sqlite;
 
 class ExpenseRepository
 {
-    private const string ConnectionString = "Data Source = expenses.db";
+    public void Initialize()
+    {
+        using var connection = new SqliteConnection("Data Source=expenses.db");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            CREATE TABLE IF NOT EXISTS expenses (
+                id INTEGER PRIMARY KEY,
+                ""date"" TEXT,
+                price INTEGER,
+                category TEXT,
+                memo TEXT
+            );
+        ";
+        command.ExecuteNonQuery();
+    }
 
     public void Insert(string date, int price, string category, string memo)
     {
@@ -17,8 +33,14 @@ class ExpenseRepository
 
             // INSERT文で値を入れる
             command.CommandText = @"
-                INSERT INTO expenses(date, price, category, memo)
-                VALUES(@date, @price, @category, @memo);
+                INSERT INTO expenses(id, ""date"", price, category, memo)
+                VALUES(
+                    (SELECT IFNULL(MAX(id), 0) + 1 FROM expenses),
+                    @date,
+                    @price,
+                    @category,
+                    @memo
+                );
             ";
 
             // SQL文内の@dateにdateを渡す
@@ -50,7 +72,7 @@ class ExpenseRepository
 
             // 全件取得するSELECT文
             command.CommandText = @"
-                SELECT id, date, price, category, memo
+                SELECT id, ""date"", price, category, memo
                 FROM expenses;
             ";
 
@@ -88,7 +110,7 @@ class ExpenseRepository
 
             // 1件取得するSELECT文
             command.CommandText = @"
-                SELECT id, date, price, category, memo
+                SELECT id, ""date"", price, category, memo
                 FROM expenses
                 WHERE id = @id;
             ";
@@ -115,6 +137,38 @@ class ExpenseRepository
         return null;
     }
 
+    public void Update(Expense expense)
+    {
+        using (var connection = new SqliteConnection("Data Source = expenses.db"))
+        {
+            // 接続開始
+            connection.Open();
+
+            // SQL実行のためのコマンドを作成
+            using var command = connection.CreateCommand();
+
+            // 指定したidのデータをUPDATE
+            command.CommandText = @"
+                UPDATE expenses
+                SET ""date"" = @date,
+                price = @price,
+                category = @category,
+                memo = @memo
+                WHERE id = @id;
+            ";
+
+            // パラメータをSQLに渡す
+            command.Parameters.AddWithValue("@date", expense.Date);
+            command.Parameters.AddWithValue("@price", expense.Price);
+            command.Parameters.AddWithValue("@category", expense.Category);
+            command.Parameters.AddWithValue("@memo", expense.Memo);
+            command.Parameters.AddWithValue("@id", expense.Id);
+
+            // UPDATE文の実行
+            command.ExecuteNonQuery();
+        }
+    }
+
     public void Delete(int id)
     {
         using (var connection = new SqliteConnection("Data Source = expenses.db"))
@@ -126,7 +180,7 @@ class ExpenseRepository
 
             // idのデータを取得しデータが存在するのか確認
             command.CommandText = @"
-                DERETE FROM expenses
+                DELETE FROM expenses
                 WHERE id = @id;
             ";
             
