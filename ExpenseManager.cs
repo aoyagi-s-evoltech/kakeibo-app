@@ -1,3 +1,5 @@
+using System.Text;
+
 class ExpenseManager
 {
     /// <summary>
@@ -8,7 +10,6 @@ class ExpenseManager
     /// expensesテーブルへ追加(INSERT)する。
     /// cancel と入力された場合は処理を中断してメニューに戻る
     /// </remarks>
-
     public void AddExpense()
     {
         Console.WriteLine("支出追加処理");
@@ -16,68 +17,31 @@ class ExpenseManager
 
         var repository = new ExpenseRepository();
 
-        // 日付(必須)正しい日付形式が入力されるまで繰り返す
-        DateTime date;
-        while (true)
+        // 日付入力（cancelで中止。正しい日付が入るまでGetRequiredDateで再入力）
+        var date = GetRequiredDate("日付を入力してください（例: 2026/01/21）(cancelで中止)");
+        if(date == default)
         {
-            var dateText = Prompt("日付を入力してください（例: 2026/01/21）(cancelで中止)");
-            if (dateText is null)
-            {
-                Console.WriteLine("入力を中止しました。");
-                return;
-            }
-
-            // 日付以外が入った場合エラーメッセージを表示
-            if (DateTime.TryParse(dateText, out date))
-            {
-                break;
-            }
-            Console.WriteLine("正しい日付を入力してください。");
+            return;
         }
 
-        // 金額(必須)数字が入力されるまで繰り返す
-        int price;
-        while (true)
+        // 金額入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        var price = GetRequiredInt("金額を入力してください（数字のみ）(cancelで中止)");
+        if(price == default)
         {
-            var priceText = Prompt("金額を入力してください（数字のみ）(cancelで中止)");
-            if(priceText is null)
-            {
-                Console.WriteLine("入力を中止しました。");
-                return;
-            }
-
-            // 数値以外が入った場合エラーメッセージを表示
-            if (int.TryParse(priceText, out price))
-            {
-                break;
-            }
-            Console.WriteLine("数値を入力してください。");
+            return;
         }
 
-        // カテゴリ(必須)null不可
-        string category;
-        while (true)
+        // カテゴリ入力（cancelで中止。空文字は再入力。GetRequiredStringで処理）
+        var category = GetRequiredString("カテゴリを入力してください(cancelで中止)");
+        if (category == null)
         {
-            var categoryText = Prompt("カテゴリを入力してください(cancelで中止)");
-            if(categoryText is null)
-            {
-                Console.WriteLine("入力を中止しました。");
-                return;
-            }
+            return;
+        } 
 
-            if (!string.IsNullOrWhiteSpace(categoryText))
-            {
-                category = categoryText;
-                break;
-            }
-            Console.WriteLine("カテゴリが入力されていません。");
-        }
-
-        // メモ(任意)null可
-        var memo = Prompt("メモを入力してください(cancelで中止)");
-        if(memo is null)
+        // メモ入力（任意入力。cancelで中止。空文字も許可）
+        var memo = GetOptionalString("メモを入力してください(cancelで中止)");
+        if(memo == null)
         {
-            Console.WriteLine("入力を中止しました。");
             return;
         }
 
@@ -110,11 +74,17 @@ class ExpenseManager
         }
 
         // データがある場合
+        var sb = new StringBuilder();
         foreach(var expense in list)
         {
-            Console.WriteLine($"ID:{expense.Id}  日付:{expense.Date}  金額:{expense.Price}  カテゴリ:{expense.Category}  メモ:{expense.Memo}");
+            sb.AppendLine($"ID:{expense.Id}");
+            sb.AppendLine($"日付:{expense.Date}");
+            sb.AppendLine($"金額:{expense.Price}");
+            sb.AppendLine($"カテゴリ:{expense.Category}");
+            sb.AppendLine($"メモ:{expense.Memo}");
         }
-            return true;
+        Console.WriteLine(sb.ToString());
+        return true;
     }
 
     /// <summary>
@@ -134,91 +104,41 @@ class ExpenseManager
 
         var repository = new ExpenseRepository();
 
-        // 編集したいidを入力
-        int id;
-        Expense expense;
-
-        while (true)
+        // ID入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        var id = GetRequiredInt("編集したいidを入力してください(cancelで中止)");
+        if (id == default)
         {
-            var idText = Prompt("編集したいidを入力してください(cancelで中止)");
-            if (idText is null)
-            {
-                Console.WriteLine("入力を中止しました。");
-                return;
-            }
+            return;
+        }
 
-            if (!int.TryParse(idText, out id))
-            {
-                Console.WriteLine("数字を入力してください。");
-                continue;
-            }
-
-            expense = repository.GetById(id);
-            if (expense == null)
-            {
-                Console.WriteLine("入力されたidがありません。もう一度入力してください。");
-                continue;
-            }
-
-            break;
+        var expense = repository.GetById(id);
+        if (expense == null)
+        {
+            Console.WriteLine("入力されたidがありません。");
+            return;
         }
 
         // 現在の内容を表示
         Console.WriteLine($"現在の内容：日付:{expense.Date}  金額:{expense.Price}  カテゴリ:{expense.Category}  メモ:{expense.Memo}");
 
-        // 新しい値を入力
-        DateTime newDateValue;
+        // 新しい日付入力（cancelで中止。正しい日付が入るまでGetRequiredDateで再入力）
+        var newDate = GetRequiredDate("新しい日付を入力してください（例: 2026/01/21）(cancelで中止)");
+        if (newDate == default) return;
+        expense.Date = newDate.ToString("yyyy/MM/dd");
 
-        while (true)
-        {
-            var newDateText = Prompt("新しい日付を入力してください（例: 2026/01/21）(cancelで中止)");
-            if (newDateText is null)
-            {
-                Console.WriteLine("入力を中止しました。");
-                return;
-            }
+        // 新しい金額入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        var newPrice = GetRequiredInt("新しい金額を入力してください(cancelで中止)");
+        if (newPrice == default) return;
+        expense.Price = newPrice;
 
-            // 日付以外が入った場合エラーメッセージを表示
-            if (DateTime.TryParse(newDateText, out newDateValue))
-            {
-                break;
-            }
-            Console.WriteLine("正しい日付を入力してください。");
-        }
-        expense.Date = newDateValue.ToString("yyyy/MM/dd");
-
-        
-        while(true)
-        {
-            var newPriceText = Prompt("新しい金額を入力してください(cancelで中止)");
-            if(newPriceText is null)
-            {
-                Console.WriteLine("入力を中止しました。");
-                return;
-            }
-
-            if(int.TryParse(newPriceText, out var newPrice))
-            {
-                expense.Price = newPrice;
-                break;
-            }
-            Console.WriteLine("数値を入力してください");
-        }
-
-        var newCategory = Prompt("新しいカテゴリを入力してください(cancelで中止)");
-        if(newCategory is null)
-        {
-            Console.WriteLine("入力を中止しました。");
-            return;
-        }
+        // 新しいカテゴリ入力（cancelで中止。空文字は再入力。GetRequiredStringで処理）
+        var newCategory = GetRequiredString("新しいカテゴリを入力してください(cancelで中止)");
+        if (newCategory == null) return;
         expense.Category = newCategory;
 
-        var newMemo = Prompt("新しいメモを入力してください(cancelで中止)");
-        if(newMemo is null)
-        {
-            Console.WriteLine("入力を中止しました。");
-            return;
-        }
+        // 新しいメモ入力（cancelで中止。空文字も許可。GetOptionalStringで処理）
+        var newMemo = GetOptionalString("新しいメモを入力してください(cancelで中止)");
+        if (newMemo == null) return;
         expense.Memo = newMemo;
 
         // 更新処理
@@ -250,16 +170,13 @@ class ExpenseManager
             return;
         }
 
-        // 削除したいidを入力
-        var idText = Prompt("削除したいidを入力してください(cancelで中止)");
-        if(idText is null)
+        // 削除したいID入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        var id = GetRequiredInt("削除したいidを入力してください(cancelで中止)");
+        if (id == default)
         {
-            Console.WriteLine("入力を中止しました。");
             return;
         }
-
-        var id = int.Parse(idText);
-
+        
         var repository = new ExpenseRepository();
 
         // idが存在するか確認
@@ -294,22 +211,115 @@ class ExpenseManager
     }
 
     /// <summary>
-    /// ユーザーにメッセージを表示して入力を受け取る
-    /// 「cancel」と入力された場合は処理を中止できるようnullを返す。
+    /// メッセージを表示し、ユーザーの入力を受け取る
     /// </summary>
     /// <param name="message">画面に表示するメッセージ</param>
-    /// <returns>入力された文字列。cancelの場合はnull</returns>
-    public static string Prompt(string message)
+    /// <returns>入力された文字列</returns>
+    public static string GetInput(string message)
     {
         Console.Write(message);
-        var input = Console.ReadLine();
+        return Console.ReadLine();
+    }
 
-        if (input?.ToLower() == "cancel")
+    /// <summary>
+    /// 入力された値がcancel(大文字可)かどうかを判断する
+    /// </summary>
+    /// <param name="input">ユーザーが入力した文字列</param>
+    /// <returns>cancelの場合true、それ以外false</returns>
+    public static bool IsCancel(string input)
+    {
+        return input?.ToLower() == "cancel";
+    }
+
+    /// <summary>
+    /// 中止時のメッセージを表示する
+    /// </summary>
+    public static void ShowCancelMessage()
+    {
+        Console.WriteLine("入力を中止しました。");
+    }
+
+    private DateTime GetRequiredDate(string message)
+    {
+        while (true)
         {
-            Console.WriteLine("キャンセルされました。");
+            var text = GetInput(message);
+            if (ShouldStopInput(text))
+            {
+                ShowCancelMessage();
+                return default;
+            }
+
+            if (DateTime.TryParse(text, out var date))
+            {
+                return date;
+            }
+
+        Console.WriteLine("正しい日付を入力してください。");
+        }
+    }
+
+    private int GetRequiredInt(string message)
+    {
+        while (true)
+        {
+            var text = GetInput(message);
+            if (ShouldStopInput(text))
+            {
+                ShowCancelMessage();
+                return default;
+            }
+
+            if (int.TryParse(text, out var value))
+            {
+                return value;
+            }
+
+        Console.WriteLine("数値を入力してください。");
+        }
+    }
+
+    private string GetRequiredString(string message)
+    {
+        while (true)
+        {
+            var text = GetInput(message);
+            if (ShouldStopInput(text))
+            {
+                ShowCancelMessage();
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return text;
+            }
+
+        Console.WriteLine("値が入力されていません。");
+        }
+    }
+
+    private string GetOptionalString(string message)
+    {
+        var text = GetInput(message);
+
+        if (ShouldStopInput(text))
+        {
+            ShowCancelMessage();
             return null;
         }
 
-        return input;
+        return text;
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    public static bool ShouldStopInput(string? input)
+    {
+        return input == null || IsCancel(input);
     }
 }
