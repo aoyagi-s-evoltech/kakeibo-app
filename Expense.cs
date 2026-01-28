@@ -1,3 +1,6 @@
+/// <summary>
+/// 支出データを表すクラス
+/// </summary>
 class Expense
 {
     public int Id { get; set; }
