@@ -1,5 +1,8 @@
 using Microsoft.Data.Sqlite;
 
+/// <summary>
+/// データの取得・追加・更新・削除を行うリポジトリクラス
+/// </summary>
 class ExpenseRepository
 {
     public void Initialize()

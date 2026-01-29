@@ -1,5 +1,8 @@
 using System.Text;
 
+/// <summary>
+/// 支出データの追加・更新・削除・表示などを管理するクラス
+/// </summary>
 class ExpenseManager
 {
     /// <summary>
@@ -18,34 +21,38 @@ class ExpenseManager
         var repository = new ExpenseRepository();
 
         // 日付入力（cancelで中止。正しい日付が入るまでGetRequiredDateで再入力）
-        var date = GetRequiredDate("日付を入力してください（例: 2026/01/21）(cancelで中止)");
+        Console.WriteLine("日付を入力してください（例: 2026/01/21）(cancelで中止)");
+        var date = GetRequiredDate();
         if(date == default)
         {
             return;
         }
 
         // 金額入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
-        var price = GetRequiredInt("金額を入力してください（数字のみ）(cancelで中止)");
+        Console.WriteLine("金額を入力してください（数字のみ）(cancelで中止)");
+        var price = GetRequiredInt();
         if(price == default)
         {
             return;
         }
 
         // カテゴリ入力（cancelで中止。空文字は再入力。GetRequiredStringで処理）
-        var category = GetRequiredString("カテゴリを入力してください(cancelで中止)");
+        Console.WriteLine("カテゴリを入力してください(cancelで中止)");
+        var category = GetRequiredString();
         if (category == null)
         {
             return;
         } 
 
         // メモ入力（任意入力。cancelで中止。空文字も許可）
-        var memo = GetOptionalString("メモを入力してください(cancelで中止)");
+        Console.WriteLine("メモを入力してください(cancelで中止)");
+        var memo = GetOptionalString();
         if(memo == null)
         {
             return;
         }
 
-        // 取得したidと入力内容をDBに登録
+        // 取得しidと入力内容をDBに登録
         repository.Insert(date.ToString("yyyy/MM/dd"), price, category, memo);
 
         Console.WriteLine("支出を追加しました");
@@ -78,7 +85,7 @@ class ExpenseManager
         foreach(var expense in list)
         {
             sb.AppendLine("ーーーーーーーーーー");
-            sb.AppendLine($"ID:{expense.Id}");
+            sb.AppendLine($"id:{expense.Id}");
             sb.AppendLine($"日付:{expense.Date}");
             sb.AppendLine($"金額:{expense.Price}");
             sb.AppendLine($"カテゴリ:{expense.Category}");
@@ -103,13 +110,14 @@ class ExpenseManager
     {
         Console.WriteLine("支出編集処理");
 
-        // ユーザーが変更したいIDを選びやすいよう、現在の値を表示
+        // ユーザーが変更したいidを選びやすいよう、現在の値を表示
         ShowExpenses();
 
         var repository = new ExpenseRepository();
 
-        // ID入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
-        var id = GetRequiredInt("編集したいidを入力してください(cancelで中止)");
+        // id入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        Console.Write("編集したいidを入力してください(cancelで中止): ");
+        var id = GetRequiredInt();
         if (id == default)
         {
             return;
@@ -126,25 +134,29 @@ class ExpenseManager
         Console.WriteLine($"現在の内容：日付:{expense.Date}  金額:{expense.Price}  カテゴリ:{expense.Category}  メモ:{expense.Memo}");
 
         // 新しい日付入力（cancelで中止。正しい日付が入るまでGetRequiredDateで再入力）
-        if (!UpdateDate("新しい日付を入力してください（例: 2026/01/21）(cancelで中止)", expense))
+        Console.WriteLine("新しい日付を入力してください（例: 2026/01/21）(cancelで中止)");
+        if (!UpdateDate(expense))
         {
             return;
         }
 
         // 新しい金額入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
-        if (!UpdatePrice("新しい金額を入力してください(cancelで中止)", expense))
+        Console.WriteLine("新しい金額を入力してください(cancelで中止)");
+        if (!UpdatePrice(expense))
         {
             return;
         }
 
         // 新しいカテゴリ入力（cancelで中止。空文字は再入力。GetRequiredStringで処理）
-        if (!UpdateCategory("新しいカテゴリを入力してください(cancelで中止)", expense))
+        Console.WriteLine("新しいカテゴリを入力してください(cancelで中止)");
+        if (!UpdateCategory(expense))
         {
             return;
         }
 
         // 新しいメモ入力（cancelで中止。空文字も許可。GetOptionalStringで処理）
-        if (!UpdateMemo("新しいメモを入力してください(cancelで中止)", expense))
+        Console.WriteLine("新しいメモを入力してください(cancelで中止)");
+        if (!UpdateMemo(expense))
         {
             return;
         }
@@ -178,8 +190,9 @@ class ExpenseManager
             return;
         }
 
-        // 削除したいID入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
-        var id = GetRequiredInt("削除したいidを入力してください(cancelで中止)");
+        // 削除したいid入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        Console.WriteLine("削除したいidを入力してください(cancelで中止)");
+        var id = GetRequiredInt();
         if (id == default)
         {
             return;
@@ -200,7 +213,7 @@ class ExpenseManager
         }
 
         // idが取得できた場合は削除前に確認
-        Console.WriteLine($"ID:{expense.Id} を本当に削除しますか？ (yes/no)");
+        Console.WriteLine($"id:{expense.Id} を本当に削除しますか？ (yes/no)");
         var confirm = Console.ReadLine();
 
         // yes(大文字まじりOK)以外の場合削除しない
@@ -224,11 +237,11 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい日付、中断時はdefault</returns>
-        private DateTime GetRequiredDate(string message)
+        private DateTime GetRequiredDate()
     {
         while (true)
         {
-            var text = GetInput(message);
+            var text = GetInput();
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
@@ -250,11 +263,11 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい整数値、中断時はdefault</returns>
-    private int GetRequiredInt(string message)
+    private int GetRequiredInt()
     {
         while (true)
         {
-            var text = GetInput(message);
+            var text = GetInput();
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
@@ -276,11 +289,11 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>空白以外の文字列、中断時はnull</returns>
-    private string GetRequiredString(string message)
+    private string GetRequiredString()
     {
         while (true)
         {
-            var text = GetInput(message);
+            var text = GetInput();
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
@@ -302,9 +315,9 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>入力された文字列、中断時はnull</returns>
-    private string GetOptionalString(string message)
+    private string GetOptionalString()
     {
-        var text = GetInput(message);
+        var text = GetInput();
 
         if (ShouldStopInput(text))
         {
@@ -321,9 +334,9 @@ class ExpenseManager
     /// <param name="message">ユーザーに表示する入力メッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合true、中断した場合false</returns>
-    private bool UpdateDate(string message, Expense expense)
+    private bool UpdateDate(Expense expense)
     {
-        var newDate = GetRequiredDate(message);
+        var newDate = GetRequiredDate();
         if (newDate == default)
         {
             return false;
@@ -339,9 +352,9 @@ class ExpenseManager
     /// <param name="message">ユーザーに表示する入力メッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合 true、中断した場合 false</returns>
-    private bool UpdatePrice(string message, Expense expense)
+    private bool UpdatePrice(Expense expense)
     {
-        var newPrice = GetRequiredInt(message);
+        var newPrice = GetRequiredInt();
         if (newPrice == default)
         {
             return false;
@@ -357,9 +370,9 @@ class ExpenseManager
     /// <param name="message">入力を促すメッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合true、中断した場合false</returns>
-    private bool UpdateCategory(string message, Expense expense)
+    private bool UpdateCategory(Expense expense)
     {
-        var newCategory = GetRequiredString(message);
+        var newCategory = GetRequiredString();
         if (newCategory == null)
         {
             return false;
@@ -375,9 +388,9 @@ class ExpenseManager
     /// <param name="message">入力を促すメッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合true、中断した場合false</returns>
-    private bool UpdateMemo(string message, Expense expense)
+    private bool UpdateMemo(Expense expense)
     {
-        var newMemo = GetOptionalString(message);
+        var newMemo = GetOptionalString();
         if (newMemo == null)
         {
             return false;
@@ -392,9 +405,8 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">画面に表示するメッセージ</param>
     /// <returns>入力された文字列</returns>
-    public static string GetInput(string message)
+    public static string GetInput()
     {
-        Console.Write(message);
         return Console.ReadLine();
     }
 

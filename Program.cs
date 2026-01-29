@@ -1,5 +1,8 @@
 ﻿using System.Text;
 
+/// <summary>
+///家計簿アプリを実行するクラス
+/// </summary>
 class Program
 {
     static void Main()
