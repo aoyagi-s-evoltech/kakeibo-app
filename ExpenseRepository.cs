@@ -23,7 +23,7 @@ class ExpenseRepository
         command.ExecuteNonQuery();
     }
 
-    public void Insert(string date, int price, string category, string memo)
+    public void Insert(Expense expense)
     {
         // DBへ接続
         using (var connection = new SqliteConnection("Data Source = expenses.db"))
@@ -47,13 +47,13 @@ class ExpenseRepository
             ";
 
             // SQL文内の@dateにdateを渡す
-            command.Parameters.AddWithValue("@date", date);
+            command.Parameters.AddWithValue("@date", expense.Date);
             // SQL文内の@priceにpriceを渡す
-            command.Parameters.AddWithValue("@price", price);
+            command.Parameters.AddWithValue("@price", expense.Price);
             // SQL文内の@categoryにcategoryを渡す
-            command.Parameters.AddWithValue("@category", category);
+            command.Parameters.AddWithValue("@category", expense.Category);
             // SQL文内の@memoにmemoを渡す
-            command.Parameters.AddWithValue("@memo", memo);
+            command.Parameters.AddWithValue("@memo", expense.Memo);
 
             // INSERT文の実行
             command.ExecuteNonQuery();
@@ -82,7 +82,7 @@ class ExpenseRepository
             // SQLを実行して結果を読み取る
             using var reader = command.ExecuteReader();
 
-            while(reader.Read())
+            while (reader.Read())
             {
                 var expense = new Expense
                 {
@@ -124,7 +124,7 @@ class ExpenseRepository
             // SELECT文を実行
             using var reader = command.ExecuteReader();
 
-            if(reader.Read())
+            if (reader.Read())
             {
                 return new Expense
                 {
@@ -186,7 +186,7 @@ class ExpenseRepository
                 DELETE FROM expenses
                 WHERE id = @id;
             ";
-            
+
             // SQL文内の@idにidを渡す
             command.Parameters.AddWithValue("@id", id);
 

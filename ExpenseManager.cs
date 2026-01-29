@@ -23,7 +23,7 @@ class ExpenseManager
         // 日付入力（cancelで中止。正しい日付が入るまでGetRequiredDateで再入力）
         Console.WriteLine("日付を入力してください（例: 2026/01/21）(cancelで中止)");
         var date = GetRequiredDate();
-        if(date == default)
+        if (date == default)
         {
             return;
         }
@@ -31,7 +31,7 @@ class ExpenseManager
         // 金額入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
         Console.WriteLine("金額を入力してください（数字のみ）(cancelで中止)");
         var price = GetRequiredInt();
-        if(price == default)
+        if (price == default)
         {
             return;
         }
@@ -42,18 +42,26 @@ class ExpenseManager
         if (category == null)
         {
             return;
-        } 
+        }
 
         // メモ入力（任意入力。cancelで中止。空文字も許可）
         Console.WriteLine("メモを入力してください(cancelで中止)");
         var memo = GetOptionalString();
-        if(memo == null)
+        if (memo == null)
         {
             return;
         }
 
         // 取得しidと入力内容をDBに登録
-        repository.Insert(date.ToString("yyyy/MM/dd"), price, category, memo);
+        var expense = new Expense
+        {
+            Date = date.ToString("yyyy/MM/dd"),
+            Price = price,
+            Category = category,
+            Memo = memo
+        };
+
+        repository.Insert(expense);
 
         Console.WriteLine("支出を追加しました");
     }
@@ -65,16 +73,20 @@ class ExpenseManager
     /// Repositoryから取得した支出データ（id/日付/金額/カテゴリ/メモ）を出力する
     /// データが1件もない場合、「データがありません」と表示
     /// </remarks>
+    /// <returns>
+    /// データが1件以上存在する場合はtrue、
+    /// データが存在しない場合はfalse
+    /// </returns>
     public bool ShowExpenses()
     {
         Console.WriteLine("支出一覧");
-        
+
         // Repositoryから全件取得
         var repository = new ExpenseRepository();
         var list = repository.GetAll();
 
         // データがない場合
-        if(list.Count == 0)
+        if (list.Count == 0)
         {
             Console.WriteLine("データがありません");
             return false;
@@ -82,7 +94,7 @@ class ExpenseManager
 
         // データがある場合
         var sb = new StringBuilder();
-        foreach(var expense in list)
+        foreach (var expense in list)
         {
             sb.AppendLine("ーーーーーーーーーー");
             sb.AppendLine($"id:{expense.Id}");
@@ -92,7 +104,7 @@ class ExpenseManager
             sb.AppendLine($"メモ:{expense.Memo}");
         }
         sb.AppendLine("ーーーーーーーーーー");
-        
+
         Console.WriteLine(sb.ToString());
         return true;
     }
@@ -110,8 +122,13 @@ class ExpenseManager
     {
         Console.WriteLine("支出編集処理");
 
-        // ユーザーが変更したいidを選びやすいよう、現在の値を表示
-        ShowExpenses();
+        // ユーザーが変更したいidを選びやすいよう、一覧を表示
+        var hasData = ShowExpenses();
+        if (!hasData)
+        {
+            Console.WriteLine("現在データはありません。");
+            return;
+        }
 
         var repository = new ExpenseRepository();
 
@@ -133,38 +150,57 @@ class ExpenseManager
         // ユーザーが変更内容を確認できるよう、現在の値を表示
         Console.WriteLine($"現在の内容：日付:{expense.Date}  金額:{expense.Price}  カテゴリ:{expense.Category}  メモ:{expense.Memo}");
 
-        // 新しい日付入力（cancelで中止。正しい日付が入るまでGetRequiredDateで再入力）
-        Console.WriteLine("新しい日付を入力してください（例: 2026/01/21）(cancelで中止)");
-        if (!UpdateDate(expense))
+        while (true)
         {
-            return;
+            var sb = new StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine("何を編集しますか？");
+            sb.AppendLine("1: 日付");
+            sb.AppendLine("2: 金額");
+            sb.AppendLine("3: カテゴリ");
+            sb.AppendLine("4: メモ");
+            sb.AppendLine("5: 編集を終了する");
+
+            Console.WriteLine(sb.ToString());
+
+            var choice = GetRequiredInt();
+            if (choice == default)
+            {
+                return;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    Console.WriteLine("新しい日付を入力してください（例: 2026/01/21）(cancelで中止)");
+                    if (!UpdateDate(expense)) return;
+                    break;
+
+                case 2:
+                    Console.WriteLine("新しい金額を入力してください(cancelで中止)");
+                    if (!UpdatePrice(expense)) return;
+                    break;
+
+                case 3:
+                    Console.WriteLine("新しいカテゴリを入力してください(cancelで中止)");
+                    if (!UpdateCategory(expense)) return;
+                    break;
+
+                case 4:
+                    Console.WriteLine("新しいメモを入力してください(cancelで中止)");
+                    if (!UpdateMemo(expense)) return;
+                    break;
+
+                case 5:
+                    repository.Update(expense);
+                    Console.WriteLine("更新しました");
+                    return;
+
+                default:
+                    Console.WriteLine("1〜5の番号を入力してください。");
+                    break;
+            }
         }
-
-        // 新しい金額入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
-        Console.WriteLine("新しい金額を入力してください(cancelで中止)");
-        if (!UpdatePrice(expense))
-        {
-            return;
-        }
-
-        // 新しいカテゴリ入力（cancelで中止。空文字は再入力。GetRequiredStringで処理）
-        Console.WriteLine("新しいカテゴリを入力してください(cancelで中止)");
-        if (!UpdateCategory(expense))
-        {
-            return;
-        }
-
-        // 新しいメモ入力（cancelで中止。空文字も許可。GetOptionalStringで処理）
-        Console.WriteLine("新しいメモを入力してください(cancelで中止)");
-        if (!UpdateMemo(expense))
-        {
-            return;
-        }
-
-        // 更新処理
-        repository.Update(expense);
-
-        Console.WriteLine("更新しました");
     }
 
     /// <summary>
@@ -178,13 +214,9 @@ class ExpenseManager
     {
         Console.WriteLine("支出削除処理");
 
-        // 一覧表示
-        bool hasData = ShowExpenses();
-
-        // データがない場合はメッセージを出力し、終了
-        if(!hasData)
+        // 一覧にデータがない場合は、メッセージを表示、一旦停止してから戻る
+        if (!ShowExpenses())
         {
-            Console.WriteLine("削除可能なデータがありません");
             Console.WriteLine("Enterキーで戻ります");
             Console.ReadLine();
             return;
@@ -204,7 +236,7 @@ class ExpenseManager
         var expense = repository.GetById(id);
 
         // idが取得できなければ、メッセージを出力し終了
-        if(expense == null)
+        if (expense == null)
         {
             Console.WriteLine("入力されたidがありません");
             Console.WriteLine("Enterキーで戻ります");
@@ -217,7 +249,7 @@ class ExpenseManager
         var confirm = Console.ReadLine();
 
         // yes(大文字まじりOK)以外の場合削除しない
-        if(confirm?.ToLower() != "yes")
+        if (confirm?.ToLower() != "yes")
         {
             Console.WriteLine("削除をキャンセルしました。");
             return;
@@ -237,23 +269,27 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい日付、中断時はdefault</returns>
-        private DateTime GetRequiredDate()
+    private DateTime GetRequiredDate()
     {
         while (true)
         {
             var text = GetInput();
+
+            // canxelが入力された場合は中断し、元の場所へ戻る
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
                 return default;
             }
 
+            // 入力された文字列が正しい日付として読み取れた場合、その日付を返す
             if (DateTime.TryParse(text, out var date))
             {
                 return date;
             }
 
-        Console.WriteLine("正しい日付を入力してください。");
+            // 読み取れなかった場合は再入力を促す
+            Console.WriteLine("正しい日付を入力してください。");
         }
     }
 
@@ -268,18 +304,22 @@ class ExpenseManager
         while (true)
         {
             var text = GetInput();
+
+            // cancelと入力されたら中断し、元の場所に戻る
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
                 return default;
             }
 
+            // 正しい整数として読み取れたら返す
             if (int.TryParse(text, out var value))
             {
                 return value;
             }
 
-        Console.WriteLine("数値を入力してください。");
+            // 読み取れなかった場合は再入力を促す
+            Console.WriteLine("数値を入力してください。");
         }
     }
 
@@ -294,18 +334,21 @@ class ExpenseManager
         while (true)
         {
             var text = GetInput();
+
+            // cancelと入力されたら処理を中断し、元の場所に戻る
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
                 return null;
             }
 
+            // 空白以外の文字列なら返す
             if (!string.IsNullOrWhiteSpace(text))
             {
                 return text;
             }
-
-        Console.WriteLine("値が入力されていません。");
+            // 空白のみの場合は再入力を促す
+            Console.WriteLine("値が入力されていません。");
         }
     }
 
@@ -319,6 +362,7 @@ class ExpenseManager
     {
         var text = GetInput();
 
+        // cancelと入力されたら処理を中断し、元の場所に戻る
         if (ShouldStopInput(text))
         {
             ShowCancelMessage();
@@ -337,11 +381,14 @@ class ExpenseManager
     private bool UpdateDate(Expense expense)
     {
         var newDate = GetRequiredDate();
+
+        // cancelの場合は更新しない
         if (newDate == default)
         {
             return false;
         }
 
+        // 正しい日付が入力されたら更新する
         expense.Date = newDate.ToString("yyyy/MM/dd");
         return true;
     }
@@ -438,5 +485,4 @@ class ExpenseManager
     {
         Console.WriteLine("入力を中止しました。");
     }
-
 }

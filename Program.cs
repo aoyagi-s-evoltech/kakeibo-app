@@ -14,7 +14,7 @@ class Program
         // メニュー処理
         var manager = new ExpenseManager();
 
-        while(true)
+        while (true)
         {
             var sb = new StringBuilder();
 
@@ -47,7 +47,7 @@ class Program
                 case "3":
                     manager.EditExpense();
                     break;
-            
+
                 // 削除
                 case "4":
                     manager.DeleteExpense();
