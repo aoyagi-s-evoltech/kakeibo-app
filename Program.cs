@@ -1,7 +1,7 @@
 ﻿using System.Text;
 
 /// <summary>
-///家計簿アプリを実行するクラス
+/// 家計簿アプリを実行するクラス
 /// </summary>
 class Program
 {
@@ -16,17 +16,17 @@ class Program
 
         while(true)
         {
-            var menu = new StringBuilder();
+            var sb = new StringBuilder();
 
-            menu.AppendLine("=== 家計簿アプリ ===");
-            menu.AppendLine("1. 支出を追加する");
-            menu.AppendLine("2. 支出一覧を見る");
-            menu.AppendLine("3. 支出を編集する");
-            menu.AppendLine("4. 支出を削除する");
-            menu.AppendLine("5. 終了");
-            menu.Append("番号を選んでください: ");
+            sb.AppendLine("=== 家計簿アプリ ===");
+            sb.AppendLine("1. 支出を追加する");
+            sb.AppendLine("2. 支出一覧を見る");
+            sb.AppendLine("3. 支出を編集する");
+            sb.AppendLine("4. 支出を削除する");
+            sb.AppendLine("5. 終了");
+            sb.Append("番号を選んでください: ");
 
-            Console.Write(menu.ToString());
+            Console.Write(sb.ToString());
 
             var input = Console.ReadLine();
             Console.WriteLine();
