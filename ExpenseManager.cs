@@ -6,7 +6,7 @@ using System.Text;
 class ExpenseManager
 {
     /// <summary>
-    /// 支出を1件データベースに追加する処理。
+    /// 支出を1件データベースに追加する処理
     /// </summary>
     /// <remarks>
     /// ユーザーから日付・金額・カテゴリ・メモの入力を受け取る
@@ -114,9 +114,9 @@ class ExpenseManager
     /// </summary>
     /// <remarks>
     /// ユーザーに編集したいidを入力してもらい、
-    /// Repositoryから対象データを取得。
+    /// Repositoryから対象データを取得
     /// データが存在する場合、現在の内容を表示し、
-    /// ユーザーより新しい値を入力してもらった後更新。
+    /// ユーザーより新しい値を入力してもらった後更新
     /// </remarks>
     public void EditExpense()
     {
@@ -126,7 +126,7 @@ class ExpenseManager
         var hasData = ShowExpenses();
         if (!hasData)
         {
-            Console.WriteLine("現在データはありません。");
+            Console.WriteLine("現在データはありません");
             return;
         }
 
@@ -140,10 +140,11 @@ class ExpenseManager
             return;
         }
 
+        // 入力されたidに対応する支出データを取得する
         var expense = repository.GetById(id);
         if (expense == null)
         {
-            Console.WriteLine("入力されたidがありません。");
+            Console.WriteLine("入力されたidのレコードが存在しません");
             return;
         }
 
@@ -197,7 +198,7 @@ class ExpenseManager
                     return;
 
                 default:
-                    Console.WriteLine("1〜5の番号を入力してください。");
+                    Console.WriteLine("1〜5の番号を入力してください");
                     break;
             }
         }
@@ -222,7 +223,7 @@ class ExpenseManager
             return;
         }
 
-        // 削除したいid入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        // 削除したいid入力（cancelで中止。整数が入力されるまでGetRequiredIntで再入力）
         Console.WriteLine("削除したいidを入力してください(cancelで中止)");
         var id = GetRequiredInt();
         if (id == default)
@@ -238,7 +239,7 @@ class ExpenseManager
         // idが取得できなければ、メッセージを出力し終了
         if (expense == null)
         {
-            Console.WriteLine("入力されたidがありません");
+            Console.WriteLine("入力されたidのレコードが存在しません");
             Console.WriteLine("Enterキーで戻ります");
             Console.ReadLine();
             return;
@@ -251,7 +252,7 @@ class ExpenseManager
         // yes(大文字まじりOK)以外の場合削除しない
         if (confirm?.ToLower() != "yes")
         {
-            Console.WriteLine("削除をキャンセルしました。");
+            Console.WriteLine("削除をキャンセルしました");
             return;
         }
 
@@ -265,7 +266,7 @@ class ExpenseManager
 
     /// <summary>
     /// 必須の日付入力を受け取り、正しい形式になるまで再入力を求める
-    /// cancelまたはnullが入力された場合はdefault(DateTime)を返す。
+    /// cancelまたはnullが入力された場合はdefault(DateTime)を返す
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい日付、中断時はdefault</returns>
@@ -275,7 +276,7 @@ class ExpenseManager
         {
             var text = GetInput();
 
-            // canxelが入力された場合は中断し、元の場所へ戻る
+            // cancelが入力された場合は中断し、元の場所へ戻る
             if (ShouldStopInput(text))
             {
                 ShowCancelMessage();
@@ -289,13 +290,13 @@ class ExpenseManager
             }
 
             // 読み取れなかった場合は再入力を促す
-            Console.WriteLine("正しい日付を入力してください。");
+            Console.WriteLine("正しい日付を入力してください");
         }
     }
 
     /// <summary>
     /// 必須の数値入力を受け取り、正しい整数値になるまで再入力を求める
-    /// cancelまたはnullが入力された場合はdefault(int)を返す。
+    /// cancelまたはnullが入力された場合はdefault(int)を返す
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい整数値、中断時はdefault</returns>
@@ -319,13 +320,13 @@ class ExpenseManager
             }
 
             // 読み取れなかった場合は再入力を促す
-            Console.WriteLine("数値を入力してください。");
+            Console.WriteLine("数値を入力してください");
         }
     }
 
     /// <summary>
     /// 必須の文字列入力を受け取り、空文字や空白のみの場合は再入力を求める
-    /// cancelまたはnullが入力された場合はnullを返す。
+    /// cancelまたはnullが入力された場合はnullを返す
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>空白以外の文字列、中断時はnull</returns>
@@ -348,13 +349,13 @@ class ExpenseManager
                 return text;
             }
             // 空白のみの場合は再入力を促す
-            Console.WriteLine("値が入力されていません。");
+            Console.WriteLine("値が入力されていません");
         }
     }
 
     /// <summary>
     /// 任意の文字列入力を受け取る（空文字も可）
-    /// cancelまたはnullが入力された場合はnullを返す。 
+    /// cancelまたはnullが入力された場合はnullを返す
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <returns>入力された文字列、中断時はnull</returns>
@@ -373,7 +374,7 @@ class ExpenseManager
     }
 
     /// <summary>
-    /// 日付の更新処理。cancelが入力された場合は更新せずfalseを返す。
+    /// 日付の更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
     /// <param name="message">ユーザーに表示する入力メッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
@@ -394,7 +395,7 @@ class ExpenseManager
     }
 
     /// <summary>
-    /// 金額の更新処理。cancelが入力された場合は更新せずfalseを返す。
+    /// 金額の更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
     /// <param name="message">ユーザーに表示する入力メッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
@@ -412,7 +413,7 @@ class ExpenseManager
     }
 
     /// <summary>
-    /// カテゴリの更新処理。cancelが入力された場合は更新せずfalseを返す。
+    /// カテゴリの更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
@@ -430,7 +431,7 @@ class ExpenseManager
     }
 
     /// <summary>
-    /// メモの更新処理。cancelが入力された場合は更新せずfalseを返す。
+    /// メモの更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
     /// <param name="message">入力を促すメッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
@@ -452,7 +453,7 @@ class ExpenseManager
     /// </summary>
     /// <param name="message">画面に表示するメッセージ</param>
     /// <returns>入力された文字列</returns>
-    public static string GetInput()
+    private static string GetInput()
     {
         return Console.ReadLine();
     }
@@ -462,7 +463,7 @@ class ExpenseManager
     /// </summary>
     /// <param name="input">ユーザーが入力した文字列</param>
     /// <returns>cancelの場合true、それ以外false</returns>
-    public static bool IsCancel(string input)
+    private static bool IsCancel(string input)
     {
         return input?.ToLower() == "cancel";
     }
@@ -473,7 +474,7 @@ class ExpenseManager
     /// </summary>
     /// <param name="input">ユーザーが入力した文字列</param>
     /// <returns>中断する場合true、それ以外false</returns>
-    public static bool ShouldStopInput(string? input)
+    private static bool ShouldStopInput(string? input)
     {
         return input == null || IsCancel(input);
     }
@@ -481,8 +482,8 @@ class ExpenseManager
     /// <summary>
     /// 中止時のメッセージを表示する
     /// </summary>
-    public static void ShowCancelMessage()
+    private static void ShowCancelMessage()
     {
-        Console.WriteLine("入力を中止しました。");
+        Console.WriteLine("入力を中止しました");
     }
 }

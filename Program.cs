@@ -54,11 +54,11 @@ class Program
                     break;
 
                 case "5":
-                    Console.WriteLine("アプリを終了します。");
+                    Console.WriteLine("アプリを終了します");
                     return;
 
                 default:
-                    Console.WriteLine("正しい番号を入力してください。");
+                    Console.WriteLine("正しい番号を入力してください");
                     break;
             }
         }

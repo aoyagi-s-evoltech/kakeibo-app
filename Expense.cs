@@ -3,14 +3,24 @@
 /// </summary>
 class Expense
 {
-    // 支出のid
+    /// <summary>
+    /// 支出データを識別するためのid
+    /// </summary>
     public int Id { get; set; }
-    // 支出が発生した日付
+    /// <summary>
+    /// 支出が発生した日付
+    /// </summary>
     public string Date { get; set; }
-    // 支出金額
+    /// <summary>
+    /// 支出金額
+    /// </summary>
     public int Price { get; set; }
-    // 支出のカテゴリ（食費・交通費など）
+    /// <summary>
+    /// 支出のカテゴリ（食費・交通費など）
+    /// </summary>
     public string Category { get; set; }
-    // 支出に関するメモ（任意）
+    /// <summary>
+    /// 支出に関するメモ（任意）
+    /// </summary>
     public string Memo { get; set; }
 }
