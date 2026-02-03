@@ -4,7 +4,7 @@
 class Expense
 {
     /// <summary>
-    /// 支出データを識別するためのid
+    /// 支出データを識別するためのID
     /// </summary>
     public int Id { get; set; }
     /// <summary>

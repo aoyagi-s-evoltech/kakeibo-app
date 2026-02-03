@@ -52,7 +52,7 @@ class ExpenseManager
             return;
         }
 
-        // 取得しidと入力内容をDBに登録
+        // 取得しIDと入力内容をDBに登録
         var expense = new Expense
         {
             Date = date.ToString("yyyy/MM/dd"),
@@ -70,7 +70,7 @@ class ExpenseManager
     /// 支出として登録されているデータを一覧で表示する
     /// </summary>
     /// <remarks>
-    /// Repositoryから取得した支出データ（id/日付/金額/カテゴリ/メモ）を出力する
+    /// Repositoryから取得した支出データ（ID/日付/金額/カテゴリ/メモ）を出力する
     /// データが1件もない場合、「データがありません」と表示
     /// </remarks>
     /// <returns>
@@ -97,7 +97,7 @@ class ExpenseManager
         foreach (var expense in list)
         {
             sb.AppendLine("ーーーーーーーーーー");
-            sb.AppendLine($"id:{expense.Id}");
+            sb.AppendLine($"ID:{expense.Id}");
             sb.AppendLine($"日付:{expense.Date}");
             sb.AppendLine($"金額:{expense.Price}");
             sb.AppendLine($"カテゴリ:{expense.Category}");
@@ -113,16 +113,14 @@ class ExpenseManager
     /// 支出データを編集
     /// </summary>
     /// <remarks>
-    /// ユーザーに編集したいidを入力してもらい、
-    /// Repositoryから対象データを取得
-    /// データが存在する場合、現在の内容を表示し、
-    /// ユーザーより新しい値を入力してもらった後更新
+    /// ユーザーに編集したいIDを入力してもらい、
+    /// Repositoryから対象データを取得し更新
     /// </remarks>
     public void EditExpense()
     {
         Console.WriteLine("支出編集処理");
 
-        // ユーザーが変更したいidを選びやすいよう、一覧を表示
+        // ユーザーが変更したいIDを選びやすいよう、一覧を表示
         var hasData = ShowExpenses();
         if (!hasData)
         {
@@ -132,19 +130,19 @@ class ExpenseManager
 
         var repository = new ExpenseRepository();
 
-        // id入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
-        Console.Write("編集したいidを入力してください(cancelで中止): ");
+        // ID入力（cancelで中止。正しい数値が入るまでGetRequiredIntで再入力）
+        Console.Write("編集したいIDを入力してください(cancelで中止): ");
         var id = GetRequiredInt();
         if (id == default)
         {
             return;
         }
 
-        // 入力されたidに対応する支出データを取得する
+        // 入力されたIDに対応する支出データを取得する
         var expense = repository.GetById(id);
         if (expense == null)
         {
-            Console.WriteLine("入力されたidのレコードが存在しません");
+            Console.WriteLine("入力されたIDのレコードが存在しません");
             return;
         }
 
@@ -208,7 +206,7 @@ class ExpenseManager
     /// 支出データを削除する
     /// </summary>
     /// <remarks>
-    /// 一覧を表示し、ユーザーに削除したいidを入力してもらう
+    /// 一覧を表示し、ユーザーに削除したいIDを入力してもらう
     /// 対象データが存在する場合、該当データを削除する
     /// </remarks>
     public void DeleteExpense()
@@ -223,8 +221,8 @@ class ExpenseManager
             return;
         }
 
-        // 削除したいid入力（cancelで中止。整数が入力されるまでGetRequiredIntで再入力）
-        Console.WriteLine("削除したいidを入力してください(cancelで中止)");
+        // 削除したいID入力（cancelで中止。整数が入力されるまでGetRequiredIntで再入力）
+        Console.WriteLine("削除したいIDを入力してください(cancelで中止)");
         var id = GetRequiredInt();
         if (id == default)
         {
@@ -233,20 +231,20 @@ class ExpenseManager
 
         var repository = new ExpenseRepository();
 
-        // idが存在するか確認
+        // IDが存在するか確認
         var expense = repository.GetById(id);
 
-        // idが取得できなければ、メッセージを出力し終了
+        // IDが取得できなければ、メッセージを出力し終了
         if (expense == null)
         {
-            Console.WriteLine("入力されたidのレコードが存在しません");
+            Console.WriteLine("入力されたIDのレコードが存在しません");
             Console.WriteLine("Enterキーで戻ります");
             Console.ReadLine();
             return;
         }
 
-        // idが取得できた場合は削除前に確認
-        Console.WriteLine($"id:{expense.Id} を本当に削除しますか？ (yes/no)");
+        // IDが取得できた場合は削除前に確認
+        Console.WriteLine($"ID:{expense.Id} を本当に削除しますか？ (yes/no)");
         var confirm = Console.ReadLine();
 
         // yes(大文字まじりOK)以外の場合削除しない
@@ -268,7 +266,6 @@ class ExpenseManager
     /// 必須の日付入力を受け取り、正しい形式になるまで再入力を求める
     /// cancelまたはnullが入力された場合はdefault(DateTime)を返す
     /// </summary>
-    /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい日付、中断時はdefault</returns>
     private DateTime GetRequiredDate()
     {
@@ -298,7 +295,6 @@ class ExpenseManager
     /// 必須の数値入力を受け取り、正しい整数値になるまで再入力を求める
     /// cancelまたはnullが入力された場合はdefault(int)を返す
     /// </summary>
-    /// <param name="message">入力を促すメッセージ</param>
     /// <returns>正しい整数値、中断時はdefault</returns>
     private int GetRequiredInt()
     {
@@ -328,7 +324,6 @@ class ExpenseManager
     /// 必須の文字列入力を受け取り、空文字や空白のみの場合は再入力を求める
     /// cancelまたはnullが入力された場合はnullを返す
     /// </summary>
-    /// <param name="message">入力を促すメッセージ</param>
     /// <returns>空白以外の文字列、中断時はnull</returns>
     private string GetRequiredString()
     {
@@ -357,7 +352,6 @@ class ExpenseManager
     /// 任意の文字列入力を受け取る（空文字も可）
     /// cancelまたはnullが入力された場合はnullを返す
     /// </summary>
-    /// <param name="message">入力を促すメッセージ</param>
     /// <returns>入力された文字列、中断時はnull</returns>
     private string GetOptionalString()
     {
@@ -376,7 +370,6 @@ class ExpenseManager
     /// <summary>
     /// 日付の更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
-    /// <param name="message">ユーザーに表示する入力メッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合true、中断した場合false</returns>
     private bool UpdateDate(Expense expense)
@@ -397,7 +390,6 @@ class ExpenseManager
     /// <summary>
     /// 金額の更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
-    /// <param name="message">ユーザーに表示する入力メッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合 true、中断した場合 false</returns>
     private bool UpdatePrice(Expense expense)
@@ -415,7 +407,6 @@ class ExpenseManager
     /// <summary>
     /// カテゴリの更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
-    /// <param name="message">入力を促すメッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合true、中断した場合false</returns>
     private bool UpdateCategory(Expense expense)
@@ -433,7 +424,6 @@ class ExpenseManager
     /// <summary>
     /// メモの更新処理。cancelが入力された場合は更新せずfalseを返す
     /// </summary>
-    /// <param name="message">入力を促すメッセージ</param>
     /// <param name="expense">更新対象の支出データ</param>
     /// <returns>更新できた場合true、中断した場合false</returns>
     private bool UpdateMemo(Expense expense)
@@ -451,7 +441,6 @@ class ExpenseManager
     /// <summary>
     /// メッセージを表示し、ユーザーの入力を受け取る
     /// </summary>
-    /// <param name="message">画面に表示するメッセージ</param>
     /// <returns>入力された文字列</returns>
     private static string GetInput()
     {

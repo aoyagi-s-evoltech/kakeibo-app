@@ -5,6 +5,10 @@ using Microsoft.Data.Sqlite;
 /// </summary>
 class ExpenseRepository
 {
+    /// <summary>
+    /// データベースとテーブルを初期化する
+    /// テーブルが存在しない場合は新規作成する
+    /// </summary>
     public void Initialize()
     {
         using var connection = new SqliteConnection("Data Source=expenses.db");
@@ -23,6 +27,10 @@ class ExpenseRepository
         command.ExecuteNonQuery();
     }
 
+    /// <summary>
+    /// 新しい支出データをデータベースに追加する
+    /// </summary>
+    /// <param name="expense">追加する支出データ</param>
     public void Insert(Expense expense)
     {
         // DBへ接続
@@ -60,6 +68,10 @@ class ExpenseRepository
         }
     }
 
+    /// <summary>
+    /// DBに登録されている全支出データを取得する
+    /// </summary>
+    /// <returns>支出データのリスト</returns>
     public List<Expense> GetAll()
     {
         var list = new List<Expense>();
@@ -100,6 +112,11 @@ class ExpenseRepository
         return list;
     }
 
+    /// <summary>
+    /// 指定したIDの支出データを1件取得する
+    /// </summary>
+    /// <param name="id">取得したいデータのID</param>
+    /// <returns>該当データ(存在しない場合はnull)</returns>
     public Expense GetById(int id)
     {
         // DBへ接続
@@ -140,6 +157,10 @@ class ExpenseRepository
         return null;
     }
 
+    /// <summary>
+    /// 指定したIDの支出データを更新
+    /// </summary>
+    /// <param name="expense">更新内容を含むデータ</param>
     public void Update(Expense expense)
     {
         using (var connection = new SqliteConnection("Data Source = expenses.db"))
@@ -150,7 +171,7 @@ class ExpenseRepository
             // SQL実行のためのコマンドを作成
             using var command = connection.CreateCommand();
 
-            // 指定したidのデータをUPDATE
+            // 指定したIDのデータをUPDATE
             command.CommandText = @"
                 UPDATE expenses
                 SET ""date"" = @date,
@@ -172,6 +193,10 @@ class ExpenseRepository
         }
     }
 
+    /// <summary>
+    /// 指定したIDのデータを削除
+    /// </summary>
+    /// <param name="id">削除対象のID</param>
     public void Delete(int id)
     {
         using (var connection = new SqliteConnection("Data Source = expenses.db"))
@@ -181,7 +206,7 @@ class ExpenseRepository
             // SQL実行のためのコマンドを作成
             using var command = connection.CreateCommand();
 
-            // idのデータを取得しデータが存在するのか確認
+            // IDのデータを取得しデータが存在するのか確認
             command.CommandText = @"
                 DELETE FROM expenses
                 WHERE id = @id;
